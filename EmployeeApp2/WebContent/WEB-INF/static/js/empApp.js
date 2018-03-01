@@ -1,4 +1,4 @@
-	var mainApp = angular.module("empApp", ['ngRoute']);
+	var mainApp = angular.module("empApp", ['ngRoute','ngTouch','ngAnimate','ui.bootstrap']);
 
 	mainApp.factory('restConstants', function(){
 		var endPoints = {
@@ -56,18 +56,16 @@
 				$http({
 			        method: 'GET',
 			        headers: {
-			        	'Accept': 'application/json',
+			        	'Accept': 'text/plain',
 			        	'Content-Type': 'application/json',
 			        	'Authorization' : token
 			        },
 			        url: restConstants.EMP_VALIDATE_TOKEN_SERVICE
 			    }).then(function (response) {
 			        console.log(response.data);
-			        /*if(response.data != null && response.data != '' && response.data == 'success'){
+			        if(response.data != null && response.data != '' && response.data == 'success'){
 			        	$location.path('/employees');
-			        }*/
-			    },function (response) {
-			        console.log(response);
+			        }
 			    });
 			}
 		},
@@ -149,7 +147,7 @@
 		};
 	}]);
 	
-	mainApp.controller("empCntrl", function($scope,$http,$location,$window,restConstants){
+	mainApp.controller("empCntrl",function($scope,$http,$location,$window,restConstants,$uibModal){
 			$scope.employees = [],
 			$scope.oldEmp = '',
 			$scope.validationError = false,
@@ -158,6 +156,7 @@
 			$scope.validLastName = false,
 			$scope.disabled = false,
 			$scope.errorMsg = "",
+			$scope.errList = [],
 			$scope.initData = function(){
 				$scope.username = sessionStorage.getItem("user");
 				$http({
@@ -188,7 +187,7 @@
 			}
     		$scope.addUser = function(){
 				var validData = false;
-				
+				$scope.errList = [];
 				if($scope.form == undefined){
 					$scope.validationError = true;
 				}
@@ -216,6 +215,17 @@
 				
 				
 				if(validData){
+					var file = $scope.form.photo;
+					
+					console.log('file is ' + file);
+
+					var fd = new FormData();
+		            fd.append('uploadfile', file);
+		            fd.append('firstName', $scope.form.fname);
+		            fd.append('lastName', $scope.form.lname);
+		            fd.append('email', $scope.form.email);
+		            fd.append('user', sessionStorage.getItem("user"));
+		            fd.append('id', '0');
 					var emp = {
 							firstName:$scope.form.fname,
 			            	lastName:$scope.form.lname,
@@ -253,7 +263,7 @@
 							$http({
 						        method: 'POST',
 						        headers: {
-						        	'Accept': 'application/json',
+						        	'Accept': 'text/plain',
 						        	'Content-Type': 'application/json',
 						        	'Authorization' : sessionStorage.getItem("token")
 						        },
@@ -383,6 +393,8 @@
     				$scope.errorMsg = response.data.errorMessage;
     			}else if(response.data.errorCode == 401){
     				$scope.errorMsg = "You are not authorized to delete records";
+    			} else if(response.status == 400){
+    				$scope.errList = response.data.errorList;
     			} else{
     				sessionStorage.setItem("errorMessage","Please Login Again to Continue");
     				$location.path('/home');
@@ -393,6 +405,58 @@
     		$scope.openViewImagePopUp = function(emp){
     			sessionStorage.setItem("empId",emp.id);
     			$window.open('/EmployeeApp2/static/viewPhoto.html', "popup", "width=300,height=200,left=500,top=150");
-    		}
+    		},
     		
+    		$scope.openModal = function(emp){
+    			sessionStorage.setItem("empId",emp.id);
+    			 $uibModal.open({
+    				 animation:true,
+    			     ariaLabelledBy: 'modal-title',
+    			     ariaDescribedBy: 'modal-body',
+    				 templateUrl: '/EmployeeApp2/static/viewPhoto.html',
+    				 controller :'photoAppCntrl',
+    				 size: 'sm', 
+				     resolve: {
+				        items: function () {
+				         // return $ctrl.items;
+				        } 
+				     }
+    			 }).result.then(function(response){
+    				 console.log("ok:"+response);
+    			 }, function(response){
+    				 console.log("error:"+response);
+    			 });
+    		}
 	});
+
+	/*mainApp.controller('photoAppCntrl', function($scope,$http,$uibModalInstance){
+		
+		$scope.loadPhoho = function(){
+			var token = sessionStorage.getItem("token");
+			var empId = sessionStorage.getItem("empId");
+			$http({
+		        method: 'GET',
+		        headers: {
+		        	'Accept': 'application/json',
+		        	'Content-Type': 'application/json',
+		        	'Authorization' : token
+		        },
+		        url: '/EmployeeApp2/employees/getEmployeePhoto?empId='+empId
+		    }).then(function (response) {
+		        console.log(response.data);
+		        $scope.image = response.data.photo;
+		        if(response.data != null && response.data != '' && response.data == 'success'){
+		        	$location.path('/employees');
+		        }
+		    },function (response) {
+		        console.log(response);
+		    });
+		}
+		$scope.cancelModal = function(){
+			console.log("cancelmodal");
+			$uibModalInstance.dismiss('close');
+		}
+		$scope.ok = function(){
+			$uibModalInstance.close('save');
+		}
+	});*/

@@ -1,6 +1,6 @@
 var mainApp = angular.module("photoApp", []);
 
-mainApp.controller('photoAppCntrl', function($scope,$http){
+mainApp.controller('photoAppCntrl', function($scope,$http,$window){
 	
 	$scope.loadPhoho = function(){
 		
@@ -16,12 +16,13 @@ mainApp.controller('photoAppCntrl', function($scope,$http){
 	        url: '/EmployeeApp2/employees/getEmployeePhoto?empId='+empId
 	    }).then(function (response) {
 	        console.log(response.data);
-	        $scope.image = response.data;
+	        $scope.image = response.data.photo;
 	        /*if(response.data != null && response.data != '' && response.data == 'success'){
 	        	$location.path('/employees');
 	        }*/
 	    },function (response) {
 	        console.log(response);
+	        $window.close();
 	    });
 	}
 });

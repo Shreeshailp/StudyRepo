@@ -1,14 +1,23 @@
 package com.employee.model;
 
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Lob;
 
+@Entity
 public class Employee {
 
-	private String id;
+	@Id
+	@GeneratedValue(strategy = GenerationType.AUTO)
+	private long id;
 	private String firstName;
 	private String lastName;
 	private String email;
-	private String user;
+	private String userCreated;
 	
+	@Lob
 	private byte[] photo;
 	
 	public Employee(){}
@@ -18,7 +27,6 @@ public class Employee {
 		this.email = email;
 	}
 	
-	
 	public byte[] getPhoto() {
 		return photo;
 	}
@@ -26,19 +34,17 @@ public class Employee {
 		this.photo = photo;
 	}
 	public String getUser() {
-		return user;
+		return userCreated;
 	}
 	public void setUser(String user) {
-		this.user = user;
+		this.userCreated = user;
 	}
-	public String getId() {
+	public long getId() {
 		return id;
 	}
-
-	public void setId(String id) {
+	public void setId(long id) {
 		this.id = id;
 	}
-
 
 	public String getFirstName() {
 		return firstName;

@@ -1,13 +1,29 @@
 package com.employee.dto;
 
+
+import org.hibernate.validator.constraints.Email;
+import org.hibernate.validator.constraints.Length;
+import org.hibernate.validator.constraints.NotEmpty;
+
 public class EmployeeDTO {
 
-	private String id;
+	private long id;
+	
+	@NotEmpty
+	@Length(min=1, max = 20)
 	private String firstName;
+	
+	@NotEmpty
+	@Length(min=1, max = 20)
 	private String lastName;
+	
+	@NotEmpty
+	@Length(min=5, max = 50)
+	@Email
 	private String email;
+	
 	private boolean highlight;
-	private String user;
+	private String userCreated;
 	
 	
 	public boolean isHighlight() {
@@ -17,15 +33,15 @@ public class EmployeeDTO {
 		this.highlight = highlight;
 	}
 	public String getUser() {
-		return user;
+		return userCreated;
 	}
 	public void setUser(String user) {
-		this.user = user;
+		this.userCreated = user;
 	}
-	public String getId() {
+	public long getId() {
 		return id;
 	}
-	public void setId(String id) {
+	public void setId(long id) {
 		this.id = id;
 	}
 	public String getFirstName() {

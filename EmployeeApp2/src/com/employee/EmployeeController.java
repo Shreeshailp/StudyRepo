@@ -1,13 +1,14 @@
 package com.employee;
 
-import java.io.IOException;
 import java.util.List;
+
+import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.MessageSource;
 import org.springframework.http.MediaType;
-import org.springframework.security.access.prepost.PostAuthorize;
-import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -21,9 +22,10 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 import com.employee.dto.EmployeeDTO;
 import com.employee.exception.classes.EmployeeAppException;
+import com.employee.model.Employee;
 import com.employee.service.EmployeeService;
-import com.employee.util.EmployeeAppConstants;
 import com.employee.util.ModelMapperUtil;
+import com.employee.util.constants.EmployeeAppConstants;
 
 @RestController
 @RequestMapping(value = "/employees")
@@ -36,30 +38,33 @@ public class EmployeeController implements EmployeeAppConstants{
 	@Value("${employee.security.authheader}")
 	String authHeader;
 	
+	@Autowired
+	MessageSource messageSource;
+	
 	@GetMapping(value = "/getAllEmployees" , produces = MediaType.APPLICATION_JSON_VALUE)
 	public List<EmployeeDTO> getAllEmployees(@RequestParam("user") String user) throws Exception{
 		return ModelMapperUtil.mapEmpModelToDTOList(empService.getAllEmployees(user));
 	}
 	
-	@PostMapping(value = "/saveEmployee", produces = MediaType.APPLICATION_JSON_VALUE)
-	public String saveEmployee(@RequestBody EmployeeDTO emp) throws EmployeeAppException {
+	@PostMapping(value = "/saveEmployee", produces = MediaType.TEXT_PLAIN_VALUE)
+	public String saveEmployee(@Validated @RequestBody EmployeeDTO emp) throws EmployeeAppException {
 		
 		String sts = EMP_APP_SER_FAIL;
-		Integer id = 0;
-		if(EMP_APP_ID_0.equalsIgnoreCase(emp.getId()) &&  (id = empService.addEmployee(ModelMapperUtil.mapEmpDTOToModel(emp))) != 0){
+		Long id = 0l;
+		if(EMP_APP_ID_0.equalsIgnoreCase(String.valueOf(emp.getId())) &&  (id = empService.addEmployee(ModelMapperUtil.mapEmpDTOToModel(emp))) != 0l){
 			sts = String.valueOf(id);
 		}
 		else
 		{
-			empService.updateEmployee(Integer.valueOf(emp.getId()),ModelMapperUtil.mapEmpDTOToModel(emp));
-			sts = emp.getId();
+			empService.updateEmployee(emp.getId(),ModelMapperUtil.mapEmpDTOToModel(emp));
+			sts = String.valueOf(emp.getId());
 		}
 		return sts;
 	}
 	
-	@PostMapping(value = "/saveEmployeePhoto", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+	@PostMapping(value = "/saveEmployeePhoto", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.TEXT_PLAIN_VALUE)
 	public String saveEmployeePhoto(@RequestParam("uploadfile") MultipartFile file , 
-			@RequestParam("empId") String empId) throws Exception{
+			@RequestParam("empId") Long empId) throws Exception{
 		
 		byte[] photo = file.getBytes();
 		empService.addEmployeePhoto(empId, photo);
@@ -68,9 +73,9 @@ public class EmployeeController implements EmployeeAppConstants{
 	}
 	
 	@GetMapping(value = "/getEmployeePhoto", produces = MediaType.APPLICATION_JSON_VALUE)
-	public byte[] getEmployeePhoto(	@RequestParam("empId") String empId) throws Exception{
+	public Employee getEmployeePhoto(	@RequestParam("empId") Long empId) throws Exception{
 		
-		byte[] photo = empService.getEmployeePhoto(empId);
+		Employee photo = empService.getEmployeePhoto(empId);
 		
 		return photo;
 	}
@@ -79,7 +84,7 @@ public class EmployeeController implements EmployeeAppConstants{
 		return ModelMapperUtil.mapEmpModelToDTO(empService.getEmployee(empId));
 	}
 	
-	@RequestMapping(value = "/deleteEmployee" , method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
+	@RequestMapping(value = "/deleteEmployee" , method = RequestMethod.DELETE, produces = MediaType.TEXT_PLAIN_VALUE)
 	public String deleteEmployee(@RequestParam("empid") Integer empid) throws EmployeeAppException{
 		
 		if(empService.deleteEmployee(empid)){

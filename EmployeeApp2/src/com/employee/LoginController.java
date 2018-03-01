@@ -6,6 +6,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -14,8 +15,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.employee.dto.LoginLogoutDTO;
 import com.employee.service.LoginService;
-import com.employee.util.EmployeeAppConstants;
 import com.employee.util.JWTParser;
+import com.employee.util.constants.EmployeeAppConstants;
 
 @RestController
 public class LoginController implements EmployeeAppConstants{
@@ -24,7 +25,7 @@ public class LoginController implements EmployeeAppConstants{
 	LoginService loginService;
 	
 	@PostMapping(value = "/home" , produces = MediaType.APPLICATION_JSON_VALUE)
-	public LoginLogoutDTO login(@RequestBody LoginLogoutDTO dto, HttpServletRequest request) throws UnsupportedEncodingException{
+	public LoginLogoutDTO login(@Validated @RequestBody LoginLogoutDTO dto, HttpServletRequest request) throws UnsupportedEncodingException{
 		
 		if(loginService.authenticateUser(dto.getUsername(), dto.getPassword())){
 			dto.setSts(EMP_LOGIN_PASS_CODE);
@@ -37,7 +38,7 @@ public class LoginController implements EmployeeAppConstants{
 		return dto;
 	}
 	
-	@GetMapping(value = "/validateToken" , produces = MediaType.APPLICATION_JSON_VALUE)
+	@GetMapping(value = "/validateToken" , produces = MediaType.TEXT_PLAIN_VALUE)
 	public String validateToken(@RequestHeader("Authorization") String token){
 		
 		try{
